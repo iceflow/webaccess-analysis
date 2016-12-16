@@ -10,6 +10,51 @@ Analyse web access logs and generate graphical statistics
 ## Solutions
 ### 1. Global solutions
 - Kinesis Agent <-> Kinesis Firehose <-> Elastic Search <-> Kibana
+
+
+/var/log/httpd/access_log
+```Bash
+172.31.4.203 - - [11/Dec/2016:03:18:03 +0000] "GET / HTTP/1.1" 200 99 "-" "ELB-HealthChecker/2.0"
+172.31.29.210 - - [11/Dec/2016:03:18:05 +0000] "GET / HTTP/1.1" 200 99 "-" "ELB-HealthChecker/2.0"
+172.31.58.251 - - [11/Dec/2016:03:18:11 +0000] "GET /path-a/index.html HTTP/1.1" 200 97 "-" "ELB-HealthChecker/2.0"
+172.31.77.112 - - [11/Dec/2016:03:18:15 +0000] "GET /path-a/index.html HTTP/1.1" 200 97 "-" "ELB-HealthChecker/2.0"
+172.31.77.2 - - [11/Dec/2016:03:18:25 +0000] "GET / HTTP/1.1" 200 99 "-" "ELB-HealthChecker/2.0"
+172.31.62.128 - - [11/Dec/2016:03:18:27 +0000] "GET / HTTP/1.1" 200 99 "-" "ELB-HealthChecker/2.0"
+172.31.4.203 - - [11/Dec/2016:03:18:33 +0000] "GET / HTTP/1.1" 200 99 "-" "ELB-HealthChecker/2.0"
+172.31.29.210 - - [11/Dec/2016:03:18:35 +0000] "GET / HTTP/1.1" 200 99 "-" "ELB-HealthChecker/2.0"
+```
+
+log format: Apache log combined
+```Bash
+CustomLog logs/access_log combined
+```
+[ Use the Agent to Pre-process Data ](http://docs.aws.amazon.com/firehose/latest/dev/writing-with-agents.html#pre-processing)
+
+/etc/aws-kinesis/agent.json
+```Bash
+{
+    "checkpointFile": "/tmp/aws-kinesis-agent-checkpoints",
+    "cloudwatch.emitMetrics": true,
+    "cloudwatch.endpoint": "https://monitoring.us-east-1.amazonaws.com",
+    "firehose.endpoint": "https://firehose.us-east-1.amazonaws.com",
+    "awsAccessKeyId": "xxxxx",
+    "awsSecretAccessKey": "xxxxxxxxxx",
+
+  "flows": [
+    {
+      "filePattern": "/var/log/httpd/access_log",
+      "deliveryStream": "weblog-firehose",
+      "dataProcessingOptions": [
+      	{
+        	"optionName": "LOGTOJSON",
+        	"logFormat": "COMBINEDAPACHELOG"
+        }
+      ]
+    }
+  ]
+}
+```
+
 - Kinesis Agent <-> Kinesis Stream <-> Lambda ( Geo enrichment ) <-> Elastic Search <-> Kibana
 
 ### 2. China solutions
