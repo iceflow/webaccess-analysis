@@ -25,7 +25,9 @@ Analyse web access logs and generate graphical statistics
 ```
 
 log format: Apache log combined
+/etc/httpd/conf/httpd.conf
 ```Bash
+LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
 CustomLog logs/access_log combined
 ```
 [ Use the Agent to Pre-process Data ](http://docs.aws.amazon.com/firehose/latest/dev/writing-with-agents.html#pre-processing)
