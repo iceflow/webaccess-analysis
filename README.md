@@ -57,6 +57,57 @@ CustomLog logs/access_log combined
 }
 ```
 
+ES Settings
+  * Customize your template
+```Bash
+
+ENDPOINT="${YOUR_ES_ENDPOINT}"
+
+curl -XPUT "http://${ENDPOINT}/_template/logstash" -d '
+{
+     "template": "logstash-*",
+     "mappings": {
+          "type1": {
+               "properties": {
+                    "host": {
+                         "type": "string"
+                    },
+                    "ident": {
+                         "type": "string"
+                    },
+                    "authuser": {
+                         "type": "string"
+                    },
+                    "datetime": {
+                         "type": "date",
+                         "format": "dd/MMM/yyyy:HH:mm:ss +0000"
+                    },
+                    "request": {
+                         "type": "string"
+                    },
+                    "response": {
+                         "type": "integer"
+                    },
+                    "bytes": {
+                         "type": "integer"
+                    },
+                    "referrer": {
+                         "type": "string"
+                    },
+                    "agent": {
+                         "type": "string"
+                    },
+                    "country": {
+                         "type": "string"
+                    },
+                    "location": {
+                         "type": "geo_point"
+                    }
+               }
+          }
+     }
+}'
+
 - Kinesis Agent <-> Kinesis Stream <-> Lambda ( Geo enrichment ) <-> Elastic Search <-> Kibana
 
 ### 2. China solutions
