@@ -1,0 +1,7 @@
+#
+#
+# Input
+# python sample_kinesis_wordputter.py --stream words -w AAA -w BBB -p 10
+#python amazon_kclpy_helper.py --print_command --java /usr/bin/java --properties sample.properties
+#python amazon_kclpy_helper.py --print_command --java /usr/bin/java --properties sample.properties --sample
+`python amazon_kclpy_helper.py --print_command --java /usr/bin/java --properties weblog.properties`

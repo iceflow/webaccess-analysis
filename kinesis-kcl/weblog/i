@@ -1,0 +1,3 @@
+
+#python sample_kinesis_wordputter.py --stream words -w AAA -w BBB -w CCC -w DDD -p 10
+python sample_kinesis_wordputter.py --stream words -w A1 -w A2 -w A3  -p 10
