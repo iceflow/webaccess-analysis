@@ -18,10 +18,36 @@ from __future__ import print_function
 import sys
 import time
 import base64
+import json
 
 from amazon_kclpy import kcl
 from amazon_kclpy.v2 import processor
 
+import geoip2.database
+import uuid
+from elasticsearch import Elasticsearch
+
+def get_geo_location(host_ip):
+    reader = geoip2.database.Reader('/data/webaccess-analysis/kinesis-kcl/weblog/GeoLite2-City.mmdb') # FIXME: 
+
+
+    location = ""
+    try:
+        response = reader.city(host_ip)
+        location = "{lat}, {lon}".format(lat=response.location.latitude, lon=response.location.longitude)
+    except Exception as e:
+        sys.stderr.write("get_geo_localtion({host}). Exception was {e}\n".format(host=host_ip, e=e))
+
+    return location
+
+def put_data_to_es(host=None, index=None, type=None, doc=None, port=80):
+    es = Elasticsearch([{'host': host, 'port':port}])
+
+    _id = uuid.uuid1().get_hex()
+
+    es.create(index=index, doc_type=type, id=_id, body=doc)
+
+    return
 
 class RecordProcessor(processor.RecordProcessorBase):
     """
@@ -100,7 +126,20 @@ class RecordProcessor(processor.RecordProcessorBase):
         ####################################
         # Insert your processing logic here
         ####################################
-        print("LEO: Process record : data[{data}] seq[{seq}] partitionKey[{key}]".format(data=data, seq=sequence_number, key=partition_key))
+        #print("DEBUG: Process record : data[{data}] seq[{seq}] partitionKey[{key}]".format(data=data, seq=sequence_number, key=partition_key))
+        json_data = json.loads(data)
+
+        #print("DEBUG: host=[{host}]".format(host=json_data['host']))
+
+        # Gettting Geo information
+        json_data['location'] = get_geo_location(json_data['host']) # "lat, lon"
+
+        # Put data to ES # FIXME
+        host='search-weblog-domain-hp5lndxriluzpb74bwomzm7ci4.us-east-1.es.amazonaws.com' 
+        index='logstash-weblogs-2016-12-01'
+        doc_type='type1'
+        put_data_to_es(host, index, doc_type, json_data)
+		
         return
 
     def should_update_sequence(self, sequence_number, sub_sequence_number):
@@ -178,5 +217,7 @@ class RecordProcessor(processor.RecordProcessorBase):
             pass
 
 if __name__ == "__main__":
+    #print("[%s]"%get_geo_location('202.96.209.6'))
+    #print("[%s]"%get_geo_location('172.16.200.8'))
     kcl_process = kcl.KCLProcess(RecordProcessor())
     kcl_process.run()
