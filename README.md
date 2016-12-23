@@ -114,3 +114,6 @@ curl -XPUT "http://${ENDPOINT}/_template/logstash" -d '
 - Kinesis Agent <-> Kinesis Stream <-> KCL applications (Geo enrichment ) <-> ES (Self build ) <-> Kibana 
 
 
+### References
+1. [ ElasticSearch Python Client ](http://elasticsearch-py.readthedocs.io/en/master/api.html)
+2. [ ElasticSearch and Kibana ](https://www.elastic.co/) 
