@@ -30,7 +30,6 @@ from elasticsearch import Elasticsearch
 def get_geo_location(host_ip):
     reader = geoip2.database.Reader('/data/webaccess-analysis/kinesis-kcl/weblog/GeoLite2-City.mmdb') # FIXME: 
 
-
     location = ""
     try:
         response = reader.city(host_ip)
@@ -43,9 +42,13 @@ def get_geo_location(host_ip):
 def put_data_to_es(host=None, index=None, type=None, doc=None, port=80):
     es = Elasticsearch([{'host': host, 'port':port}])
 
-    _id = uuid.uuid1().get_hex()
 
-    es.create(index=index, doc_type=type, id=_id, body=doc)
+    # Put with specific index
+    #_id = uuid.uuid1().get_hex()
+    #es.create(index=index, doc_type=type, id=_id, body=doc)
+
+    # Put with auto-generated index
+    es.index(index=index, doc_type=type, body=doc)
 
     return
 
@@ -216,8 +219,19 @@ class RecordProcessor(processor.RecordProcessorBase):
         except:
             pass
 
-if __name__ == "__main__":
+
+def test():
+    host='search-weblog-domain-hp5lndxriluzpb74bwomzm7ci4.us-east-1.es.amazonaws.com' 
+    index='test-index'
+    doc_type='external'
+    json_data = {'name':'996'}
+    put_data_to_es(host, index, doc_type, json_data)
     #print("[%s]"%get_geo_location('202.96.209.6'))
     #print("[%s]"%get_geo_location('172.16.200.8'))
+
+
+if __name__ == "__main__":
+    #test()
+
     kcl_process = kcl.KCLProcess(RecordProcessor())
     kcl_process.run()
